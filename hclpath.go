@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func readSelector(token string) (string, error) {
@@ -32,6 +33,43 @@ func readBlockHeader(token string) (blockType string, blockLabels string, err er
 	return blockType, label, nil
 }
 
+func filterBlocks(blocks hcl.Blocks, selector string) (hcl.Blocks, error) {
+	attrName, attrValue, _ := strings.Cut(selector, "=")
+
+	var candidateBlocks hcl.Blocks
+
+	for _, b := range blocks {
+		attrs, _ := b.Body.JustAttributes()
+		if attrs == nil {
+			return nil, errors.New("failed to read attributes")
+		}
+		if len(attrs) == 0 {
+			continue
+		}
+
+		for _, a := range attrs {
+			if a.Name != attrName {
+				continue
+			}
+			if attrValue == "" {
+				candidateBlocks = append(candidateBlocks, b)
+				continue
+			}
+
+			val, _ := a.Expr.Value(nil)
+			if val.Type() == cty.String {
+				if attrValue == val.AsString() {
+					candidateBlocks = append(candidateBlocks, b)
+				}
+			} else {
+				return nil, fmt.Errorf("cannot handle attributes of type %v", val.Type())
+			}
+		}
+	}
+
+	return candidateBlocks, nil
+}
+
 func FindBlocks(b hcl.Body, path string) (hcl.Blocks, error) {
 	token, rest, _ := strings.Cut(path, "/")
 
@@ -44,7 +82,7 @@ func FindBlocks(b hcl.Body, path string) (hcl.Blocks, error) {
 	if blockLabel != "" {
 		labels = []string{blockLabel}
 	}
-	log.Printf("finding '%v' with label '%v', remaining '%v'...", blockType, blockLabel, rest)
+	log.Printf("finding '%v' with labels '%v', remaining '%v'...", blockType, labels, rest)
 	schema := hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{},
 		Blocks: []hcl.BlockHeaderSchema{
@@ -62,6 +100,19 @@ func FindBlocks(b hcl.Body, path string) (hcl.Blocks, error) {
 	if len(blocks) == 0 {
 		log.Printf("No blocks found")
 		return hcl.Blocks{}, nil
+	}
+
+	selector, err := readSelector(token)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read selectors: %v", err)
+	}
+
+	if selector != "" {
+		filteredBlocks, err := filterBlocks(blocks, selector)
+		if err != nil {
+			return nil, fmt.Errorf("failed to filter by selector: %v", err)
+		}
+		blocks = filteredBlocks
 	}
 
 	var candidateBlocks hcl.Blocks
