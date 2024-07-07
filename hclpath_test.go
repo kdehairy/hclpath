@@ -64,6 +64,18 @@ func TestMain(t *testing.T) {
 			test:     "terraform/backend:s3[region=eu-west-2]",
 			expected: 1,
 		},
+		{
+			name:     "attribute value integer",
+			fixture:  "test-1.tf",
+			test:     "locals[app_version=1]",
+			expected: 1,
+		},
+		{
+			name:     "attribute value float",
+			fixture:  "test-1.tf",
+			test:     "locals[app_float=1.45]",
+			expected: 1,
+		},
 	}
 
 	for _, tc := range cases {

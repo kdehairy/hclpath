@@ -7,15 +7,14 @@ import (
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
-	"github.com/zclconf/go-cty/cty"
 )
 
 func readSelector(token string) (string, error) {
-	i := strings.IndexRune(token, '[')
+	i := strings.Index(token, "[")
 	if i == -1 {
 		return "", nil
 	}
-	j := strings.IndexRune(token, ']')
+	j := strings.LastIndex(token, "]")
 	if j == -1 {
 		return "", errors.New("no matching ']' found")
 	}
@@ -30,11 +29,13 @@ func readBlockHeader(token string) (blockType string, blockLabels string, err er
 	}
 
 	label, _, _ := strings.Cut(rest, "[")
+	blockType, _, _ = strings.Cut(blockType, "[")
 	return blockType, label, nil
 }
 
 func filterBlocks(blocks hcl.Blocks, selector string) (hcl.Blocks, error) {
 	attrName, attrValue, _ := strings.Cut(selector, "=")
+	log.Printf("attrName: %v, attrValue: %v", attrName, attrValue)
 
 	var candidateBlocks hcl.Blocks
 
@@ -57,12 +58,12 @@ func filterBlocks(blocks hcl.Blocks, selector string) (hcl.Blocks, error) {
 			}
 
 			val, _ := a.Expr.Value(nil)
-			if val.Type() == cty.String {
-				if attrValue == val.AsString() {
-					candidateBlocks = append(candidateBlocks, b)
-				}
-			} else {
-				return nil, fmt.Errorf("cannot handle attributes of type %v", val.Type())
+			equals, err := isEqual(val, attrValue)
+			if err != nil {
+				return nil, fmt.Errorf("failed to test equality: %v", err)
+			}
+			if equals {
+				candidateBlocks = append(candidateBlocks, b)
 			}
 		}
 	}

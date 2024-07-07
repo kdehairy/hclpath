@@ -30,12 +30,13 @@ provider "aws" {
 }
 locals {
   app_name    = "bruno-beans"
-  app_version = "7132aaa"
+  app_version = 1
+  app_float   = 1.45
 
   cba_base_domain  = var.cba_base_domain
   tasks            = jsondecode("[{\"name\":\"datetime\",\"image\":\"datetime-image-path\",\"env\":[{\"name\":\"ALWAYS_LOG_WARNINGS_STDERR\",\"value\":\"1\"},{\"name\":\"SERVER_ROLE_MAY_RUN_EXPERIMENTS\",\"value\":\"0\"}]}]")
   rollout_strategy = jsondecode("{\"Steps\":[{\"Name\":\"staging\",\"Traffic\":{\"Old\":100,\"New\":0}},{\"Name\":\"vanguard\",\"Traffic\":{\"Old\":90,\"New\":10}},{\"Name\":\"full on\",\"Traffic\":{\"Old\":0,\"New\":100}}]}")
-  iam_policy_names = ["rds_policy_1"]
+  iam_policy_names = ["rds_policy_1", "rds_policy_2"]
 }
 
 locals {
