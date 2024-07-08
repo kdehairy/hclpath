@@ -7,9 +7,11 @@ import (
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
+	"github.com/kdehairy/hclpath/cmpval"
 )
 
 func readSelector(token string) (string, error) {
+	log.Printf("token: %v", token)
 	i := strings.Index(token, "[")
 	if i == -1 {
 		return "", nil
@@ -23,13 +25,16 @@ func readSelector(token string) (string, error) {
 }
 
 func readBlockHeader(token string) (blockType string, blockLabels string, err error) {
-	blockType, rest, _ := strings.Cut(token, ":")
+	block, _, _ := strings.Cut(token, "[")
+	if block == "" {
+		return "", "", errors.New("missing block type")
+	}
+
+	blockType, label, _ := strings.Cut(block, ":")
 	if blockType == "" {
 		return "", "", errors.New("no type token found")
 	}
 
-	label, _, _ := strings.Cut(rest, "[")
-	blockType, _, _ = strings.Cut(blockType, "[")
 	return blockType, label, nil
 }
 
@@ -58,7 +63,7 @@ func filterBlocks(blocks hcl.Blocks, selector string) (hcl.Blocks, error) {
 			}
 
 			val, _ := a.Expr.Value(nil)
-			equals, err := isEqual(val, attrValue)
+			equals, err := cmpval.IsEqual(val, attrValue)
 			if err != nil {
 				return nil, fmt.Errorf("failed to test equality: %v", err)
 			}
@@ -71,8 +76,43 @@ func filterBlocks(blocks hcl.Blocks, selector string) (hcl.Blocks, error) {
 	return candidateBlocks, nil
 }
 
+func readFirstToken(path string) (token string, rest string, err error) {
+	log.Printf("path = %v", path)
+	end := strings.IndexAny(path, "[/")
+	if end == -1 {
+		return path, "", nil
+	}
+	log.Printf("end = %v", end)
+	if path[end] == '[' {
+		log.Printf("path[end:] = %v", path[end:])
+		i := strings.Index(path[end:], "]")
+		if i == -1 {
+			return "", "", errors.New("no matching ']' found")
+		}
+		end = end + i
+		log.Printf("end = %v", end)
+		log.Printf("path[end:] = %v", path[end:])
+		i = strings.Index(path[end:], "/")
+		if i != -1 {
+			end = end + i
+		}
+		end = end + 1
+	}
+	log.Printf("end = %v, len path = %v", end, len(path))
+	if end >= len(path) {
+		end = len(path)
+		rest = ""
+	} else {
+		rest = path[end+1:]
+	}
+	return path[:end], rest, nil
+}
+
 func FindBlocks(b hcl.Body, path string) (hcl.Blocks, error) {
-	token, rest, _ := strings.Cut(path, "/")
+	token, rest, err := readFirstToken(path)
+	if err != nil {
+		return nil, fmt.Errorf("invalid path '%v': %v", path, err)
+	}
 
 	blockType, blockLabel, err := readBlockHeader(token)
 	if err != nil {

@@ -1,4 +1,4 @@
-package hclpath
+package cmpval
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ func cmpNumber(val cty.Value, expected float64) (bool, error) {
 	return isEqual, nil
 }
 
-func isEqual(val cty.Value, expected string) (bool, error) {
+func IsEqual(val cty.Value, expected string) (bool, error) {
 	var isEqual bool
 	if val.Type() == cty.String {
 		isEqual = cmpString(val, expected)

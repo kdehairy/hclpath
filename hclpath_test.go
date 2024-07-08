@@ -76,6 +76,12 @@ func TestMain(t *testing.T) {
 			test:     "locals[app_float=1.45]",
 			expected: 1,
 		},
+		{
+			name:     "attribute with backslash",
+			fixture:  "test-1.tf",
+			test:     "provider:aws/assume_role[role_arn=arn:aws:iam::0987654321:role/assumable_role]",
+			expected: 1,
+		},
 	}
 
 	for _, tc := range cases {
