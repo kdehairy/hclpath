@@ -3,9 +3,11 @@ package attr
 import (
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/gocty"
 )
 
 type Attrs struct {
@@ -50,4 +52,22 @@ func (a Attrs) AsString(name string) (string, error) {
 	}
 
 	return val.AsString(), nil
+}
+
+func (a Attrs) AsObject(name string, obj interface{}) error {
+	attr, err := getAttr(a.block.Body, name)
+	if err != nil {
+		return fmt.Errorf("failed to get attribute '%v': %v", name, err)
+	}
+	val, _ := attr.Expr.Value(nil)
+	if !val.Type().IsObjectType() {
+		return fmt.Errorf("attribute '%v' is of type '%v'", name, val.Type().FriendlyName())
+	}
+
+	err = gocty.FromCtyValue(val, obj)
+	if err != nil {
+		return fmt.Errorf("failed to parse value into %v", reflect.TypeOf(obj))
+	}
+
+	return nil
 }

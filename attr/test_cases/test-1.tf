@@ -6,4 +6,9 @@ module {
   attr01 = "x"
   attr02 = "y"
   attr03 = "z"
+  attr_obj = {
+    a = "a"
+    b = "b"
+    c = "c"
+  }
 }
