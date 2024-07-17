@@ -66,7 +66,7 @@ func (a Attrs) AsObject(name string, obj interface{}) error {
 
 	err = gocty.FromCtyValue(val, obj)
 	if err != nil {
-		return fmt.Errorf("failed to parse value into %v", reflect.TypeOf(obj))
+		return fmt.Errorf("failed to parse value into %v: %v", reflect.TypeOf(obj), err)
 	}
 
 	return nil
