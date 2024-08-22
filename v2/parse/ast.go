@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/kdehairy/hclpath/v1/lex"
+	"github.com/kdehairy/hclpath/v2/lex"
 )
 
 type Node string

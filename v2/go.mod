@@ -1,4 +1,4 @@
-module github.com/kdehairy/hclpath/v1
+module github.com/kdehairy/hclpath/v2
 
 go 1.22.0
 

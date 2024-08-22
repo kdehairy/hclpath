@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/kdehairy/hclpath/v1/cmpval"
-	"github.com/kdehairy/hclpath/v1/logging"
-	"github.com/kdehairy/hclpath/v1/parse"
+	"github.com/kdehairy/hclpath/v2/cmpval"
+	"github.com/kdehairy/hclpath/v2/logging"
+	"github.com/kdehairy/hclpath/v2/parse"
 )
 
 type (
