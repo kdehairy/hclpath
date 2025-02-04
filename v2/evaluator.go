@@ -3,12 +3,10 @@ package hclpath
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/kdehairy/hclpath/v2/cmpval"
-	"github.com/kdehairy/hclpath/v2/logging"
 	"github.com/kdehairy/hclpath/v2/parse"
 )
 
@@ -24,8 +22,6 @@ type Compilation struct {
 type evaluation struct {
 	Do evalFunc
 }
-
-var logger = logging.NewDefaultLogger(slog.LevelDebug)
 
 func Compile(path string) (*Compilation, error) {
 	logger.Info("Recieved path", "path", path)

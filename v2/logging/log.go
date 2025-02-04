@@ -3,6 +3,7 @@ package logging
 import (
 	"context"
 	"log/slog"
+	"os"
 )
 
 type LevelHandler struct {
@@ -37,7 +38,29 @@ func (h *LevelHandler) Handler() slog.Handler {
 	return h.handler
 }
 
-func NewDefaultLogger(level slog.Leveler) *slog.Logger {
+func strToLevel(val string) slog.Level {
+	switch val {
+	case "debug":
+		return slog.LevelDebug
+	case "warn":
+		return slog.LevelWarn
+	case "error":
+		return slog.LevelError
+	case "info":
+		return slog.LevelInfo
+	}
+	return slog.LevelWarn
+}
+
+func NewDefaultLogger() *slog.Logger {
+	level := slog.LevelWarn
+	if val, ok := os.LookupEnv("GO_LOG_LEVEL"); ok {
+		level = strToLevel(val)
+	}
+	return NewLogger(level)
+}
+
+func NewLogger(level slog.Leveler) *slog.Logger {
 	h := slog.Default().Handler()
 	return slog.New(NewLevelHandler(level, h))
 }

@@ -5,7 +5,10 @@ import (
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/kdehairy/hclpath/v2/logging"
 )
+
+var logger = logging.NewDefaultLogger()
 
 func Query(b hcl.Body, path string) (hclsyntax.Blocks, error) {
 	body := b.(*hclsyntax.Body)
