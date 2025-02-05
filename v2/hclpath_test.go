@@ -3,8 +3,6 @@ package hclpath
 import (
 	"strings"
 	"testing"
-
-	"github.com/hashicorp/hcl/v2/hclparse"
 )
 
 type TestCase struct {
@@ -82,14 +80,7 @@ func TestHclPath(t *testing.T) {
 		testName := strings.ReplaceAll(tc.name, " ", "_")
 		testName = strings.ToLower(testName)
 		t.Run(testName, func(t *testing.T) {
-			hclParser := hclparse.NewParser()
-			hclFile, _ := hclParser.ParseHCLFile("test_cases/test-1.tf")
-			if hclFile == nil {
-				t.Fatalf("failed to parse hcl file")
-			}
-			body := hclFile.Body
-
-			blocks, err := Query(body, tc.test)
+			blocks, err := QueryFile("test_cases/test-1.tf", tc.test)
 			if err != nil {
 				t.Fatalf("failed to find block: %v", err)
 			}
