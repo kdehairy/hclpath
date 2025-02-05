@@ -2,6 +2,7 @@ package cmpval
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 
 	"github.com/zclconf/go-cty/cty"
@@ -13,16 +14,13 @@ func cmpString(val cty.Value, expected string) bool {
 }
 
 func cmpNumber(val cty.Value, expected float64) (bool, error) {
-	var isEqual bool
+	const tolerance = 1e-9
 	var a float64
 	err := gocty.FromCtyValue(val, &a)
 	if err != nil {
 		return false, fmt.Errorf("failed to parse number: %v", err)
 	}
-	if expected == a {
-		isEqual = true
-	}
-	return isEqual, nil
+	return math.Abs(expected-a) <= tolerance, nil
 }
 
 func IsEqual(val cty.Value, expected string) (bool, error) {
