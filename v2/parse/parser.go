@@ -145,13 +145,13 @@ func (p *Parser) Parse() (Expr, error) {
 			rhs.(*Ident).ntype = Label
 		case lex.FILTER_START:
 			rhs, err = p.parseFilter()
-			if ok, err := p.consume(lex.FILTER_END); !ok {
-				return nil, err
+			if ok, error := p.consume(lex.FILTER_END); !ok {
+				return nil, error
 			}
 		case lex.SELECT_START:
 			rhs, err = p.parseNum()
-			if ok, err := p.consume(lex.SELECT_END); !ok {
-				return nil, err
+			if ok, error := p.consume(lex.SELECT_END); !ok {
+				return nil, error
 			}
 		}
 		if err != nil {

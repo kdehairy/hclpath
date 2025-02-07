@@ -135,8 +135,24 @@ func evaluate(expr parse.Expr) (*evaluation, interface{}, error) {
 			}
 		case parse.SelOp:
 			self.Do = func(b hclsyntax.Blocks) (hclsyntax.Blocks, interface{}, error) {
-				// TODO: find blocks
-				return nil, nil, errors.ErrUnsupported
+				blocks, _, err := lhs.Do(b)
+				if err != nil {
+					return nil, nil, err
+				}
+
+				if rvalue == nil {
+					return nil, nil, errors.New("expected rvalue, but found none")
+				}
+				index, ok := rvalue.(int)
+				if !ok {
+					return nil, nil, fmt.Errorf("expected integer rvalue, but found '%v'", rvalue)
+				}
+
+				if len(blocks) <= index {
+					return nil, nil, fmt.Errorf("index '%v' out of bound, got a list of '%v' blocks", rvalue, len(blocks))
+				}
+
+				return blocks[index : index+1], nil, nil
 			}
 		}
 	} else {

@@ -74,6 +74,18 @@ func TestHclPath(t *testing.T) {
 			test:     "provider:aws/assume_role{role_arn='arn:aws:iam::0987654321:role/assumable_role'}",
 			expected: 1,
 		},
+		{
+			name:     "first block of multiple",
+			fixture:  "test-1.tf",
+			test:     "provider:aws[0]",
+			expected: 1,
+		},
+		{
+			name:     "one block of multiple further filtered",
+			fixture:  "test-1.tf",
+			test:     "provider:aws[1]{alias='infra-account'}",
+			expected: 1,
+		},
 	}
 
 	for _, tc := range cases {
