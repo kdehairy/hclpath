@@ -1,4 +1,4 @@
-package attr
+package unmarshal
 
 import (
 	"fmt"
@@ -8,14 +8,15 @@ import (
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
-	"github.com/kdehairy/hclpath"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/kdehairy/hclpath/v2"
 	"github.com/zclconf/go-cty/cty/function"
 	"github.com/zclconf/go-cty/cty/function/stdlib"
 )
 
 type TestCase struct {
 	expected interface{}
-	test     func(block *hcl.Block, attr string) (bool, error)
+	test     func(block *hclsyntax.Block, attr string) (bool, error)
 	name     string
 	fixture  string
 	block    string
@@ -36,7 +37,7 @@ func TestObjType(t *testing.T) {
 			fixture: "test-1.tf",
 			block:   "module",
 			attr:    "attr_obj",
-			test: func(input *hcl.Block, name string) (bool, error) {
+			test: func(input *hclsyntax.Block, name string) (bool, error) {
 				block := New(input)
 				var obj AttrObj
 				attr, err := block.GetAttr(name)
@@ -69,7 +70,7 @@ func TestObjType(t *testing.T) {
 			fixture: "test-1.tf",
 			block:   "module/block1",
 			attr:    "jsonAttr",
-			test: func(input *hcl.Block, name string) (bool, error) {
+			test: func(input *hclsyntax.Block, name string) (bool, error) {
 				block := New(input)
 				var obj struct {
 					Name  string `cty:"name"`
@@ -105,9 +106,8 @@ func TestObjType(t *testing.T) {
 			if hclFile == nil {
 				t.Fatalf("failed to parse hcl file")
 			}
-			body := hclFile.Body
 
-			blocks, err := hclpath.FindBlocks(body, tc.block)
+			blocks, err := hclpath.QueryFile("test_cases/test-1.tf", tc.block)
 			if err != nil {
 				t.Fatalf("failed to find block:%v", err)
 			}
@@ -149,14 +149,7 @@ func TestStringType(t *testing.T) {
 		testName := strings.ReplaceAll(tc.name, " ", "_")
 		testName = strings.ToLower(testName)
 		t.Run(testName, func(t *testing.T) {
-			hclParser := hclparse.NewParser()
-			hclFile, _ := hclParser.ParseHCLFile("test_cases/test-1.tf")
-			if hclFile == nil {
-				t.Fatalf("failed to parse hcl file")
-			}
-			body := hclFile.Body
-
-			blocks, err := hclpath.FindBlocks(body, tc.block)
+			blocks, err := hclpath.QueryFile("test_cases/test-1.tf", tc.block)
 			if err != nil {
 				t.Fatalf("failed to find block:%v", err)
 			}

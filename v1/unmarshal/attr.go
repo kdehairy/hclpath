@@ -1,22 +1,23 @@
-package attr
+package unmarshal
 
 import (
 	"fmt"
 	"reflect"
 
 	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
 type Block struct {
-	block *hcl.Block
+	block *hclsyntax.Block
 }
 
 type Attr struct {
 	attr *hcl.Attribute
 }
 
-func New(block *hcl.Block) Block {
+func New(block *hclsyntax.Block) Block {
 	return Block{
 		block: block,
 	}
